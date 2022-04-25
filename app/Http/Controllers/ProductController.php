@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ProductStoredEvent;
 use App\Http\Requests\ProductRequestStore;
 use App\Http\Requests\ProductRequestUpdate;
 use App\Http\Resources\ProductResource;
@@ -28,7 +29,13 @@ class ProductController extends Controller
      */
     public function store(ProductRequestStore $request)
     {
-        return new ProductResource(Product::create($request->all()));
+        $product = auth()->user()
+            ->products()
+            ->create($request->all());
+
+        event(new ProductStoredEvent(auth()->user(), $product));
+
+        return new ProductResource($product);
     }
 
     /**
